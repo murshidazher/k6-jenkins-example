@@ -10,7 +10,29 @@ export let options = {
   },
 };
 
+const API_BASE_URL = 'http://localhost';
+
 export default function () {
-  http.get('http://test.k6.io/contacts.php');
+  let requests = {
+    forever: {
+      method: 'GET',
+      url: `${API_BASE_URL}:8080/`,
+    },
+    'pm2/rolling': {
+      method: 'GET',
+      url: `${API_BASE_URL}:8090/`,
+    },
+  };
+
+  let responses = http.batch(requests);
+
+  check(responses['forever'], {
+    'forever status was 200': (res) => res.status === 200,
+  });
+
+  check(responses['public/crocodiles/${Id}'], {
+    'pm2/rolling status was 200': (res) => res.status === 200,
+  });
+
   sleep(3);
 }
